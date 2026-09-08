@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:16
+
+    container_name: product_postgre
+    
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: product_management
+
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
+
+  # docker stop django_postgres
+
+  # run docker-compose.yml
+
+      # docker compose up -d   
+      # docker ps    
+    
