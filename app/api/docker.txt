@@ -1,0 +1,66 @@
+Yes 👍 Since you are using PostgreSQL inside Docker, you can view the categories table in several ways.
+
+Method 1: Using Docker Terminal — Recommended
+
+First check your running container:
+
+docker ps
+
+You already have:
+
+product_postgre
+Step 1: Enter PostgreSQL
+
+Run:
+
+docker exec -it product_postgre psql -U postgres -d product_management
+
+You should see something like:
+
+product_management=#
+
+That means you are now inside PostgreSQL.
+
+Step 2: View all tables
+
+Type:
+
+\dt
+
+You should see:
+
+ Schema |    Name    | Type  | Owner
+--------+------------+-------+----------
+ public | categories | table | postgres
+Step 3: View the Category table structure
+\d categories
+
+You can see columns like:
+
+id
+name
+created_at
+updated_at
+Step 4: View Category data
+SELECT * FROM categories;
+
+Example:
+
+                  id                  |     name      | created_at
+--------------------------------------+---------------+------------
+550e8400-xxxx-xxxx-xxxx-xxxxxxxxxxxx  | Electronics   | ...
+Step 5: Exit PostgreSQL
+\q
+Complete flow
+PowerShell
+    ↓
+docker exec -it product_postgre psql -U postgres -d product_management
+    ↓
+product_management=#
+    ↓
+\dt                    → View tables
+\d categories           → View table structure
+SELECT * FROM categories; → View data
+\q                     → Exit
+
+You can also view the database visually using pgAdmin or DBeaver, but for now I recommend practicing these PostgreSQL commands first.
