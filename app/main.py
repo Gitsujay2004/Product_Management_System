@@ -4,11 +4,11 @@ from sqlalchemy import text
 
 from app.database.base import Base
 from app.database.session import engine
-from app.api.category import router as category_router
-from app.api.product import router as product_router
-from app.api.product_image import router as product_image_router
+from app.old_approach.category import router as category_router
+from app.old_approach.product import router as product_router
+from app.old_approach.product_image import router as product_image_router
 from app.api.v1.endpoints.user_router import router as user_router
-from app.api.session import router as session_router
+from app.old_approach.session import router as session_router
 
 import app.models
 

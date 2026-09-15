@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.session import get_db
 from app.models.productImage_model import Product_Image
-from app.schemas.productIamge_schema import ProductImageCreate, ProductImageUpdate
+from app.schemas.productImage_schema import ProductImageCreate, ProductImageUpdate
 
 
 router = APIRouter(

@@ -57,7 +57,7 @@ async def delete_user(
     db: AsyncSession,
     user
 ):
-    await user_repo.delete_user(
+     return await user_repo.delete_user(
         db=db,
         user=user
     )
