@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.database import get_db
-from app.models.product_image import Product_Image
-from app.schemas.product_image import ProductImageCreate, ProductImageUpdate
+from app.database.session import get_db
+from app.models.productImage_model import Product_Image
+from app.schemas.productIamge_schema import ProductImageCreate, ProductImageUpdate
 
 
 router = APIRouter(

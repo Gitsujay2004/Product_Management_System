@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 
-from app.database.database import engine, Base
+
+from app.database.base import Base
+from app.database.session import engine
 from app.api.category import router as category_router
 from app.api.product import router as product_router
 from app.api.product_image import router as product_image_router

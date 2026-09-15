@@ -4,13 +4,11 @@ from sqlalchemy.ext.asyncio import  create_async_engine,async_sessionmaker, Asyn
    
 
 
-from sqlalchemy.orm import DeclarativeBase
-
-from app.core.config import settings
 
 
-class Base(DeclarativeBase):
-    pass
+from app.core.settings import settings
+
+
 
 
 engine = create_async_engine(

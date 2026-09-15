@@ -4,9 +4,9 @@ from fastapi import APIRouter,Depends,HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.database import get_db
-from app.models.product import Product
-from app.schemas.product import ProductCreate,ProductUpdate
+from app.database.session import get_db
+from app.models.product_model import Product
+from app.schemas.product_schema import ProductCreate,ProductUpdate
 
 router = APIRouter(
     prefix = "/products",

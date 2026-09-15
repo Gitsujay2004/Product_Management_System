@@ -3,7 +3,7 @@ from sqlalchemy import String,DateTime,Boolean,ForeignKey
 from sqlalchemy.orm import Mapped,mapped_column
 from sqlalchemy.sql import func
 
-from app.database.database import Base
+from app.database.base import Base
 
 class Product_Image(Base):
     
