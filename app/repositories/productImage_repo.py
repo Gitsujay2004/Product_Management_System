@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.productImage_model import ProductImage
 
 
-async def create_product_image(
+async def productImage_repo(
     db: AsyncSession,
     product_id: UUID,
     url: str,
