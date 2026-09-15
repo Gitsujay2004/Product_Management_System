@@ -1,0 +1,90 @@
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git status
+On branch main
+All conflicts fixed but you are still merging.
+  (use "git commit" to conclude merge)
+
+Changes to be committed:
+        new file:   README.md
+
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git commit -m "Merge remote main"
+[main f098467] Merge remote main
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git push -u origin main
+Enumerating objects: 33, done.
+Counting objects: 100% (33/33), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (28/28), done.
+Writing objects: 100% (32/32), 8.83 KiB | 393.00 KiB/s, done.
+Total 32 (delta 3), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (3/3), done.
+To https://github.com/Gitsujay2004/Product_Management_System.git
+   25952d8..f098467  main -> main
+branch 'main' set up to track 'origin/main'.
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git branch -a
+* main
+  remotes/origin/main
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git checkout main
+Already on 'main'
+Your branch is up to date with 'origin/main'.
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git pull origin main
+From https://github.com/Gitsujay2004/Product_Management_System
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git chechout -b develop
+git: 'chechout' is not a git command. See 'git --help'.
+
+The most similar command is
+        checkout
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git checkout -b develop
+Switched to a new branch 'develop'
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git push -u origin develop
+Total 0 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: 
+remote: Create a pull request for 'develop' on GitHub by visiting:
+remote:      https://github.com/Gitsujay2004/Product_Management_System/pull/new/develop
+remote: 
+To https://github.com/Gitsujay2004/Product_Management_System.git
+ * [new branch]      develop -> develop
+branch 'develop' set up to track 'origin/develop'.
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git checkout develop
+Already on 'develop'
+Your branch is up to date with 'origin/develop'.
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git checkout -b feature
+Switched to a new branch 'feature'
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git branch
+  develop
+* feature
+  main
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git push -u origin feature
+Total 0 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: 
+remote: Create a pull request for 'feature' on GitHub by visiting:
+remote:      https://github.com/Gitsujay2004/Product_Management_System/pull/new/feature
+remote: 
+To https://github.com/Gitsujay2004/Product_Management_System.git
+ * [new branch]      feature -> feature
+branch 'feature' set up to track 'origin/feature'.
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git add .
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git commit -m "braches created successfully"
+On branch feature
+Your branch is up to date with 'origin/feature'.
+
+nothing to commit, working tree clean
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git push
+Everything up-to-date
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git branch
+  develop
+* feature
+  main
+PS C:\Users\ELCOT\Desktop\Product_Management_System> git branch -a
+  develop
+* feature
+  main
+  remotes/origin/develop
+  remotes/origin/feature
+  remotes/origin/main
+PS C:\Users\ELCOT\Desktop\Product_Management_System> 
