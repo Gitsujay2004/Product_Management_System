@@ -7,7 +7,7 @@ from app.database.session import engine
 from app.api.category import router as category_router
 from app.api.product import router as product_router
 from app.api.product_image import router as product_image_router
-from app.api.user import router as user_router
+from app.api.v1.endpoints.user_router import router as user_router
 from app.api.session import router as session_router
 
 import app.models
