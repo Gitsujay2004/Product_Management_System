@@ -9,6 +9,6 @@ class LoginRequest(BaseModel):
     email:EmailStr
     password:str
 
-class TokenResponse:
-    access_token:str
+class RefreshTokenRequest(BaseModel):
+    refresh_token:str
     token_type:str

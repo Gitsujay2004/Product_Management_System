@@ -22,8 +22,9 @@ class Session(Base):
     )
 
     token: Mapped[str] = mapped_column(
-        String(500),
-        nullable=False
+        String(5000),
+        nullable=False,
+        unique=True
     )
 
     expires_at: Mapped[DateTime] = mapped_column(
