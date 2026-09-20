@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.security import hash_password,verify_password
+from app.core.security import create_access_token, hash_password,verify_password
 from app.repositories import user_repo
 
 async def register_user(db:AsyncSession,username:str,email:str,password:str):
@@ -26,7 +26,15 @@ async def login_user(db:AsyncSession,email:str,password:str):
     if not password_valid:
         raise HTTPException(status_code=401,detail="Invalid email or password")
 
-    return user
+    access_token = create_access_token(
+
+        data={
+            "sub":str(user.id),
+            "email":user.email
+        }
+    )
+
+    return user,access_token
 
 
 
