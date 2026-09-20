@@ -49,6 +49,21 @@ async def get_session_by_id(
     return result.scalar_one_or_none()
 
 
+
+async def get_session_by_token(
+    db: AsyncSession,
+    token: str
+):
+    result = await db.execute(
+        select(Session).where(
+            Session.token == token
+        )
+    )
+
+    return result.scalar_one_or_none()
+
+
+
 async def update_session(
     db: AsyncSession,
     session: Session,
@@ -71,3 +86,21 @@ async def delete_session(
     await db.delete(session)
 
     await db.commit()
+
+
+
+
+async def delete_session_by_token(
+    db: AsyncSession,
+    token: str
+):
+    session = await get_session_by_token(
+        db=db,
+        token=token
+    )
+
+    if session is not None:
+        await db.delete(session)
+        await db.commit()
+
+    return session
