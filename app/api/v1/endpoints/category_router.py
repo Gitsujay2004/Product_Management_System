@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.session import get_db
 from app.schemas.category_schema import CategoryCreate, CategoryUpdate
 from app.services import category_service
+from app.api.dependencies import get_current_user,require_admin
 
 
 router = APIRouter(
@@ -18,7 +19,8 @@ router = APIRouter(
 @router.post("/")
 async def create_category(
     category: CategoryCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_admin = Depends(require_admin)
 ):
     await category_service.create_category(
         db=db,
@@ -33,7 +35,8 @@ async def create_category(
 # GET ALL CATEGORIES
 @router.get("/")
 async def get_categories(
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     categories = await category_service.get_categories(
         db=db
@@ -55,7 +58,8 @@ async def get_categories(
 @router.get("/{category_id}")
 async def get_category_by_id(
     category_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     category = await category_service.get_category_by_id(
         db=db,
@@ -82,7 +86,8 @@ async def get_category_by_id(
 async def update_category(
     category_id: UUID,
     category_data: CategoryUpdate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_admin = Depends(require_admin)
 ):
     category = await category_service.get_category_by_id(
         db=db,
@@ -114,7 +119,8 @@ async def update_category(
 @router.delete("/{category_id}")
 async def delete_category(
     category_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_admin = Depends(require_admin)
 ):
     category = await category_service.get_category_by_id(
         db=db,

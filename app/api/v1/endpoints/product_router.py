@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.session import get_db
 from app.schemas.product_schema import ProductCreate, ProductUpdate
 from app.services import product_service
+from app.api.dependencies import require_admin, get_current_user
 
 
 router = APIRouter(
@@ -18,9 +19,10 @@ router = APIRouter(
 @router.post("/")
 async def create_product(
     product: ProductCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_admin = Depends(require_admin)
 ):
-    await product_service.create_product(
+    product = await product_service.create_product(
         db=db,
         name=product.name,
         price=product.price,
@@ -39,7 +41,8 @@ async def create_product(
 # GET ALL PRODUCTS
 @router.get("/")
 async def get_products(
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     products = await product_service.get_products(
         db=db
@@ -61,7 +64,8 @@ async def get_products(
 @router.get("/{product_id}")
 async def get_product_by_id(
     product_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
     product = await product_service.get_product_by_id(
         db=db,
@@ -88,7 +92,8 @@ async def get_product_by_id(
 async def update_product(
     product_id: UUID,
     product_data: ProductUpdate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_admin = Depends(require_admin)
 ):
     product = await product_service.get_product_by_id(
         db=db,
@@ -127,7 +132,8 @@ async def update_product(
 @router.delete("/{product_id}")
 async def delete_product(
     product_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_admin = Depends(require_admin)
 ):
     product = await product_service.get_product_by_id(
         db=db,

@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.category_model import Category
 
+
 async def create_category(db:AsyncSession,categoryname:str):
     new_category = Category(
         name=categoryname
