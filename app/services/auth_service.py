@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime,timedelta,timezone
-from app.core.settings import Settings
+from app.core.settings import settings  
 
 from app.core.security import create_access_token, hash_password,verify_password,create_refresh_token,verify_access_token,verify_refresh_token
 from app.repositories import user_repo,session_repo
@@ -27,11 +27,12 @@ async def login_user(db:AsyncSession,email:str,password:str):
     password_valid = verify_password(password,user.password)
 
     if not password_valid:
-        raise None
+        return None
 
     token_data = {
-        "sub":str(user),
-        "email":user.email
+        "sub":str(user.id),
+        "email":user.email,
+        "role":user.role
     }
 
     access_token = create_access_token( data = token_data)
@@ -40,7 +41,7 @@ async def login_user(db:AsyncSession,email:str,password:str):
 
       # Refresh token expiry
     expires_at = datetime.now(timezone.utc) + timedelta(
-        days=Settings.REFRESH_TOKEN_EXPIRE_DAYS
+        days=settings.REFRESH_TOKEN_EXPIRE_DAYS
     )   
 
     # Store refresh token in sessions table
@@ -122,7 +123,7 @@ async def refresh_access_token(
 async def logout_user(db:AsyncSession,refresh_token:str):
     session = await session_repo.get_session_by_token(db=db,token=refresh_token)
 
-    if session in None:
+    if session is None:
         return False
     await session_repo.delete_session(db=db,session=session)
     return True

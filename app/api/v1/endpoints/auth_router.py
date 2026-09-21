@@ -102,7 +102,7 @@ async def refresh_token(
 
 @router.post("/logout")
 async def logout(token_data:RefreshTokenRequest,db:AsyncSession = Depends(get_db)):
-    result = await auth_service.logout_user(db.db,refresh_token=token_data.refresh_token)
+    result = await auth_service.logout_user(db=db,refresh_token=token_data.refresh_token)
     if not result:
         raise HTTPException(
             status_code=401,

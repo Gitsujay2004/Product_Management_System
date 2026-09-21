@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.session import get_db
 from app.schemas.user_schema import UserCreate, UserUpdate
 from app.services import user_service
+from app.api.dependencies import require_admin
 
 
 router = APIRouter(
@@ -56,7 +57,8 @@ async def get_users(
 @router.get("/{user_id}")
 async def get_user_using_id(
     user_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    
 ):
     user = await user_service.get_user_by_id(
         db=db,
@@ -113,7 +115,8 @@ async def update_user(
 @router.delete("/{user_id}")
 async def delete_user(
     user_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_admin = Depends(require_admin)
 ):
     user = await user_service.get_user_by_id(
         db=db,
