@@ -4,6 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.category_model import Category
+from sqlalchemy import select, exists
+from app.models.product_model import Product
 
 
 async def create_category(db:AsyncSession,categoryname:str):
@@ -29,6 +31,18 @@ async def get_category_by_id(db:AsyncSession,category_id:UUID):
 
     return result.scalar_one_or_none()
 
+async def get_category_by_name(
+    db: AsyncSession,
+    name: str
+):
+    result = await db.execute(
+        select(Category).where(
+            Category.name.ilike(name)
+        )
+    )
+
+    return result.scalar_one_or_none()
+
 async def update_category(db:AsyncSession,category : Category,name:str):
     category.name = name
 
@@ -41,4 +55,18 @@ async def delete_category(db:AsyncSession,category : Category):
 
     await db.delete(category)
     await db.commit()
+
+async def category_has_products(
+    db: AsyncSession,
+    category_id: UUID
+):
+    result = await db.execute(
+        select(
+            exists().where(
+                Product.category_id == category_id #Product import above
+            )
+        )
+    )
+
+    return result.scalar()
 

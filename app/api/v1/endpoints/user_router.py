@@ -1,12 +1,13 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.session import get_db
-from app.schemas.user_schema import UserCreate, UserUpdate
+from app.schemas.user_schema import UserCreate, UserUpdate,UserStatusUpdate
 from app.services import user_service
 from app.api.dependencies import require_admin
+from app.api.dependencies import get_current_user, require_admin
 
 
 router = APIRouter(
@@ -15,7 +16,7 @@ router = APIRouter(
 )
 
 
-@router.post("/")
+@router.post("/",  status_code=status.HTTP_201_CREATED)
 async def create_user(
     user: UserCreate,
     db: AsyncSession = Depends(get_db)
@@ -53,12 +54,31 @@ async def get_users(
         ]
     }
 
+# own user access
+@router.get("/me")
+async def get_my_profile(
+    current_user=Depends(get_current_user)
+):
+    return {
+        "message": "Profile fetched successfully",
+        "user": {
+            "id": str(current_user.id),
+            "username": current_user.username,
+            "email": current_user.email,
+            "role": current_user.role,
+            "is_active": current_user.is_active,
+            "created_at": current_user.created_at,
+            "updated_at": current_user.updated_at
+        }
+    }
 
+
+#admin access
 @router.get("/{user_id}")
-async def get_user_using_id(
+async def get_user(
     user_id: UUID,
     db: AsyncSession = Depends(get_db),
-    
+    current_admin=Depends(require_admin)
 ):
     user = await user_service.get_user_by_id(
         db=db,
@@ -68,16 +88,19 @@ async def get_user_using_id(
     if user is None:
         raise HTTPException(
             status_code=404,
-            detail="user not found"
+            detail="User not found"
         )
 
     return {
-        "message": "user fetched successfully",
-        "data": {
+        "message": "User fetched successfully",
+        "user": {
             "id": str(user.id),
             "username": user.username,
             "email": user.email,
-            "is_active": user.is_active
+            "role": user.role,
+            "is_active": user.is_active,
+            "created_at": user.created_at,
+            "updated_at": user.updated_at
         }
     }
 
@@ -86,7 +109,8 @@ async def get_user_using_id(
 async def update_user(
     user_id: UUID,
     user_data: UserUpdate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_admin=Depends(require_admin)
 ):
     user = await user_service.get_user_by_id(
         db=db,
@@ -96,10 +120,10 @@ async def update_user(
     if user is None:
         raise HTTPException(
             status_code=404,
-            detail="user not found"
+            detail="User not found"
         )
 
-    await user_service.update_user(
+    updated_user = await user_service.update_user(
         db=db,
         user=user,
         username=user_data.username,
@@ -108,10 +132,15 @@ async def update_user(
     )
 
     return {
-        "message": "user updated successfully"
+        "message": "User updated successfully",
+        "user": {
+            "id": str(updated_user.id),
+            "username": updated_user.username,
+            "email": updated_user.email,
+            "role": updated_user.role,
+            "is_active": updated_user.is_active
+        }
     }
-
-
 @router.delete("/{user_id}")
 async def delete_user(
     user_id: UUID,
@@ -136,4 +165,39 @@ async def delete_user(
 
     return {
         "message": "user deleted successfully"
+    }
+
+@router.patch("/{user_id}/status")
+async def update_user_status(
+    user_id: UUID,
+    status_data: UserStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_admin=Depends(require_admin)
+):
+    user = await user_service.get_user_by_id(
+        db=db,
+        user_id=user_id
+    )
+
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    updated_user = await user_service.set_user_active_status(
+        db=db,
+        user=user,
+        is_active=status_data.is_active
+    )
+
+    return {
+        "message": "User status updated successfully",
+        "user": {
+            "id": str(updated_user.id),
+            "username": updated_user.username,
+            "email": updated_user.email,
+            "role": updated_user.role,
+            "is_active": updated_user.is_active
+        }
     }

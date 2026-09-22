@@ -43,14 +43,20 @@ async def get_current_user(
         )
 
     user = await user_repo.get_user_by_id(
-        db=db,
-        user_id=user_uuid
-    )
+    db=db,
+    user_id=user_uuid
+)
 
     if user is None:
         raise HTTPException(
             status_code=401,
             detail="User not found"
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=403,
+            detail="User account is inactive"
         )
 
     return user

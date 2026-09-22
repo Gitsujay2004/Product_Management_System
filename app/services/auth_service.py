@@ -7,19 +7,49 @@ from app.core.security import create_access_token, hash_password,verify_password
 from app.repositories import user_repo,session_repo
 from uuid import UUID
 
-async def register_user(db:AsyncSession,username:str,email:str,password:str):
-    existing_user  = await user_repo.get_user_by_email(db=db,email=email)
+async def register_user(
+    db: AsyncSession,
+    username: str,
+    email: str,
+    password: str
+):
+    existing_username = await user_repo.get_user_by_username(
+        db=db,
+        username=username
+    )
 
-    if existing_user is not None:
-        raise HTTPException(status_code=400,detail="Email already registered")
+    if existing_username is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Username already exists"
+        )
+
+    existing_email = await user_repo.get_user_by_email(
+        db=db,
+        email=email
+    )
+
+    if existing_email is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
 
     hashed_password = hash_password(password)
 
-    return await user_repo.create_user(db=db,username=username,email=email,password=hashed_password)
+    return await user_repo.create_user(
+        db=db,
+        username=username,
+        email=email,
+        password=hashed_password
+    )
 
 async def login_user(db:AsyncSession,email:str,password:str):
 
     user = await user_repo.get_user_by_email(db=db,email=email)
+
+    if user is None:
+        raise HTTPException(status_code=401,detail="Invalid email or password")
 
     if user is None:
         raise HTTPException(status_code=401,detail="Invalid email or password")
