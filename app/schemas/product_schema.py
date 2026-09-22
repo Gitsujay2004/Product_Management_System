@@ -1,6 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from decimal import Decimal
 from uuid import UUID
+
+
+class ProductImageRequest(BaseModel):
+    url:str
+    is_primary : bool = False
 
 
 class ProductCreate(BaseModel):
@@ -11,6 +16,7 @@ class ProductCreate(BaseModel):
     description : str
     sku : str
     category_id: UUID
+    images : list[ProductImageRequest] = Field(default_factory=list)
 
 class ProductUpdate(BaseModel):
     name : str

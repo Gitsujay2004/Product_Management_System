@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories import product_repo
 
+from decimal import Decimal
+
 
 async def create_product(
     db: AsyncSession,
@@ -13,7 +15,8 @@ async def create_product(
     status: str,
     description: str,
     sku: str,
-    category_id: UUID
+    category_id: UUID,
+    images
 ):
     return await product_repo.create_product(
         db=db,
@@ -23,17 +26,34 @@ async def create_product(
         status=status,
         description=description,
         sku=sku,
-        category_id=category_id
+        category_id=category_id,
+        images=images
     )
-
 
 async def get_products(
-    db: AsyncSession
+    db: AsyncSession,
+    skip: int = 0,
+    limit: int = 10,
+    search: str | None = None,
+    category_id: UUID | None = None,
+    status: str | None = None,
+    min_price: Decimal | None = None,
+    max_price: Decimal | None = None,
+    sort_by: str = "created_at",
+    sort_order: str = "desc"
 ):
     return await product_repo.get_products(
-        db=db
+        db=db,
+        skip=skip,
+        limit=limit,
+        search=search,
+        category_id=category_id,
+        status=status,
+        min_price=min_price,
+        max_price=max_price,
+        sort_by=sort_by,
+        sort_order=sort_order
     )
-
 
 async def get_product_by_id(
     db: AsyncSession,

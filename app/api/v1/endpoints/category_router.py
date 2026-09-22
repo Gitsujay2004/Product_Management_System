@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.session import get_db
@@ -16,7 +16,7 @@ router = APIRouter(
 
 
 # CREATE CATEGORY
-@router.post("/")
+@router.post("/",  status_code=status.HTTP_201_CREATED)
 async def create_category(
     category: CategoryCreate,
     db: AsyncSession = Depends(get_db),
@@ -115,12 +115,11 @@ async def update_category(
     }
 
 
-# DELETE CATEGORY
 @router.delete("/{category_id}")
 async def delete_category(
     category_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_admin = Depends(require_admin)
+    current_admin=Depends(require_admin)
 ):
     category = await category_service.get_category_by_id(
         db=db,
@@ -130,7 +129,7 @@ async def delete_category(
     if category is None:
         raise HTTPException(
             status_code=404,
-            detail="category not found"
+            detail="Category not found"
         )
 
     await category_service.delete_category(
@@ -139,5 +138,5 @@ async def delete_category(
     )
 
     return {
-        "message": "category deleted successfully"
+        "message": "Category deleted successfully"
     }

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.session import get_db
@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 
-@router.post("/register")
+@router.post("/register",  status_code=status.HTTP_201_CREATED)
 async def register(
     user_data: RegisterRequest,
     db: AsyncSession = Depends(get_db)

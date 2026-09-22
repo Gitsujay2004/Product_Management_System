@@ -1,9 +1,12 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select,delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user_model import User
+from sqlalchemy import delete
+from app.models.session_model import Session
+from sqlalchemy import select, or_
 
 
 async def create_user(db: AsyncSession,username: str,email: str,password: str):
@@ -63,9 +66,57 @@ async def update_user(
     return user
 
 
+#duplicate email or name protection
+
+async def get_user_by_username(
+    db: AsyncSession,
+    username: str
+):
+    result = await db.execute(
+        select(User).where(
+            User.username.ilike(username)
+        )
+    )
+
+    return result.scalar_one_or_none()
+
+
+
 async def delete_user(
     db: AsyncSession,
     user: User
 ):
+    await delete_user_sessions(
+        db=db,
+        user_id=user.id
+    )
+
     await db.delete(user)
+
     await db.commit()
+
+#user + session delete
+
+async def delete_user_sessions(
+    db: AsyncSession,
+    user_id: UUID
+):
+    await db.execute(
+        delete(Session).where(
+            Session.user_id == user_id
+        )
+    )
+
+#deactivate user
+
+async def set_user_active_status(
+    db: AsyncSession,
+    user: User,
+    is_active: bool
+):
+    user.is_active = is_active
+
+    await db.commit()
+    await db.refresh(user)
+
+    return user
