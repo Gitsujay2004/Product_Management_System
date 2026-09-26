@@ -8,6 +8,10 @@ from app.schemas.user_schema import UserCreate, UserUpdate,UserStatusUpdate
 from app.services import user_service
 from app.api.dependencies import require_admin
 from app.api.dependencies import get_current_user, require_admin
+from app.schemas.user_response_schema import UserResponse
+from app.schemas.common_schema import DataResponse, MessageResponse
+from app.exceptions.custom_exceptions import (NotFoundException,   BadRequestException)
+
 
 
 router = APIRouter(
@@ -55,26 +59,24 @@ async def get_users(
     }
 
 # own user access
-@router.get("/me")
+@router.get(
+    "/me",
+    response_model=DataResponse[UserResponse]
+)
 async def get_my_profile(
     current_user=Depends(get_current_user)
 ):
     return {
         "message": "Profile fetched successfully",
-        "user": {
-            "id": str(current_user.id),
-            "username": current_user.username,
-            "email": current_user.email,
-            "role": current_user.role,
-            "is_active": current_user.is_active,
-            "created_at": current_user.created_at,
-            "updated_at": current_user.updated_at
-        }
+        "data": current_user
     }
 
 
 #admin access
-@router.get("/{user_id}")
+@router.get(
+    "/{user_id}",
+    response_model=DataResponse[UserResponse]
+)
 async def get_user(
     user_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -86,26 +88,20 @@ async def get_user(
     )
 
     if user is None:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found"
+        raise NotFoundException(
+    message="User not found",
+    error_code="USER_NOT_FOUND"
         )
 
     return {
         "message": "User fetched successfully",
-        "user": {
-            "id": str(user.id),
-            "username": user.username,
-            "email": user.email,
-            "role": user.role,
-            "is_active": user.is_active,
-            "created_at": user.created_at,
-            "updated_at": user.updated_at
-        }
+        "data": user
     }
 
-
-@router.put("/{user_id}")
+@router.put(
+    "/{user_id}",
+    response_model=DataResponse[UserResponse]
+)
 async def update_user(
     user_id: UUID,
     user_data: UserUpdate,
@@ -118,10 +114,10 @@ async def update_user(
     )
 
     if user is None:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found"
-        )
+        raise NotFoundException(
+    message="User not found",
+    error_code="USER_NOT_FOUND"
+      )
 
     updated_user = await user_service.update_user(
         db=db,
@@ -133,19 +129,17 @@ async def update_user(
 
     return {
         "message": "User updated successfully",
-        "user": {
-            "id": str(updated_user.id),
-            "username": updated_user.username,
-            "email": updated_user.email,
-            "role": updated_user.role,
-            "is_active": updated_user.is_active
-        }
+        "data": updated_user
     }
-@router.delete("/{user_id}")
+
+@router.delete(
+    "/{user_id}",
+    response_model=MessageResponse
+)
 async def delete_user(
     user_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_admin = Depends(require_admin)
+    current_admin=Depends(require_admin)
 ):
     user = await user_service.get_user_by_id(
         db=db,
@@ -153,10 +147,10 @@ async def delete_user(
     )
 
     if user is None:
-        raise HTTPException(
-            status_code=404,
-            detail="user not found"
-        )
+        raise NotFoundException(
+    message="User not found",
+    error_code="USER_NOT_FOUND"
+       )
 
     await user_service.delete_user(
         db=db,
@@ -164,10 +158,10 @@ async def delete_user(
     )
 
     return {
-        "message": "user deleted successfully"
+        "message": "User deleted successfully"
     }
 
-@router.patch("/{user_id}/status")
+@router.patch("/{user_id}/status",response_model=DataResponse[UserResponse])
 async def update_user_status(
     user_id: UUID,
     status_data: UserStatusUpdate,
@@ -180,10 +174,10 @@ async def update_user_status(
     )
 
     if user is None:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found"
-        )
+        raise NotFoundException(
+    message="User not found",
+    error_code="USER_NOT_FOUND"
+      )
 
     updated_user = await user_service.set_user_active_status(
         db=db,
@@ -193,11 +187,5 @@ async def update_user_status(
 
     return {
         "message": "User status updated successfully",
-        "user": {
-            "id": str(updated_user.id),
-            "username": updated_user.username,
-            "email": updated_user.email,
-            "role": updated_user.role,
-            "is_active": updated_user.is_active
-        }
+        "data":updated_user
     }
