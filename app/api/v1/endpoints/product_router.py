@@ -9,7 +9,11 @@ from app.schemas.product_schema import ProductCreate, ProductUpdate
 from app.services import product_service
 from app.api.dependencies import require_admin, get_current_user
 from typing import Literal  
-from app.schemas.product_response_schema import ProductListResponse
+from app.schemas.product_response_schema import ProductListResponse,ProductResponse
+from app.schemas.common_schema import DataResponse
+from app.schemas.common_schema import MessageResponse
+from app.exceptions.custom_exceptions import (NotFoundException,   BadRequestException)
+import math
 
 router = APIRouter(
     prefix="/products",
@@ -18,7 +22,7 @@ router = APIRouter(
 
 
 # CREATE PRODUCT
-@router.post("/",status_code=status.HTTP_201_CREATED)
+@router.post("/",status_code=status.HTTP_201_CREATED,response_model=DataResponse[ProductResponse])
 async def create_product(
     product_data: ProductCreate,
     db: AsyncSession = Depends(get_db),
@@ -38,18 +42,22 @@ async def create_product(
 
     return {
         "message": "Product created successfully",
-        "data": {
-            "id": str(product.id),
-            "name": product.name,
-            "price": product.price,
-            "stock": product.stock,
-            "status": product.status,
-            "description": product.description,
-            "sku": product.sku,
-            "category_id": str(product.category_id)
-        }
+        "data":product
+        # "data": {
+        #     "id": str(product.id),
+        #     "name": product.name,
+        #     "price": product.price,
+        #     "stock": product.stock,
+        #     "status": product.status,
+        #     "description": product.description,
+        #     "sku": product.sku,
+        #     "category_id": str(product.category_id)
+        # }
     }
-@router.get("/",response_model=ProductListResponse)
+@router.get(
+    "/",
+    response_model=ProductListResponse
+)
 async def get_products(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
@@ -64,7 +72,7 @@ async def get_products(
 
     max_price: Decimal | None = Query(None, ge=0),
 
-    sort_by: Literal[  #literal allowed values only
+    sort_by: Literal[
         "name",
         "price",
         "stock",
@@ -81,15 +89,12 @@ async def get_products(
     current_user=Depends(get_current_user)
 ):
 
-    if (
-        min_price is not None
-        and max_price is not None
-        and min_price > max_price
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail="min_price cannot be greater than max_price"
-        )
+    if min_price is not None and max_price is not None:
+        if min_price > max_price:
+            raise BadRequestException(
+                message="min_price cannot be greater than max_price",
+                error_code="INVALID_PRICE_RANGE"
+            )
 
     skip = (page - 1) * limit
 
@@ -106,10 +111,22 @@ async def get_products(
         sort_order=sort_order
     )
 
+    total_pages = math.ceil(total / limit) if total > 0 else 0
+
+    has_next = page < total_pages
+    has_previous = page > 1
+
     return {
         "message": "Products fetched successfully",
-        "page": page,
-        "limit": limit,
+
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "total_pages": total_pages,
+            "has_next": has_next,
+            "has_previous": has_previous
+        },
 
         "search": search,
         "category_id": category_id,
@@ -121,35 +138,11 @@ async def get_products(
         "sort_by": sort_by,
         "sort_order": sort_order,
 
-        "total": total,
-        "data":products #responsive method
-
-        # "data": [
-        #     {
-        #         "id": str(product.id),
-        #         "name": product.name,
-        #         "price": product.price,
-        #         "stock": product.stock,
-        #         "status": product.status,
-        #         "description": product.description,
-        #         "sku": product.sku,
-        #         "category_id": str(product.category_id),
-
-        #         "images": [
-        #             {
-        #                 "id": str(image.id),
-        #                 "url": image.url,
-        #                 "is_primary": image.is_primary
-        #             }
-        #             for image in product.images
-        #         ]
-        #     }
-        #     for product in products
-        # ]
+        "data": products
     }
 #get product by id
 
-@router.get("/{product_id}")
+@router.get("/{product_id}",response_model=DataResponse[ProductResponse])
 async def get_product_by_id(
     product_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -161,35 +154,38 @@ async def get_product_by_id(
     )
 
     if product is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Product not found"
+        raise NotFoundException(
+            message="Product not found",
+            error_code="PRODUCT_NOT_FOUND"
         )
-
     return {
         "message": "Product fetched successfully",
-        "data": {
-            "id": str(product.id),
-            "name": product.name,
-            "price": product.price,
-            "stock": product.stock,
-            "status": product.status,
-            "description": product.description,
-            "sku": product.sku,
-            "category_id": str(product.category_id),
-            "images": [
-                {
-                    "id": str(image.id),
-                    "url": image.url,
-                    "is_primary": image.is_primary
-                }
-                for image in product.images
-            ]
-        }
+        "data": product
+        # "data": {
+        #     "id": str(product.id),
+        #     "name": product.name,
+        #     "price": product.price,
+        #     "stock": product.stock,
+        #     "status": product.status,
+        #     "description": product.description,
+        #     "sku": product.sku,
+        #     "category_id": str(product.category_id),
+        #     "images": [
+        #         {
+        #             "id": str(image.id),
+        #             "url": image.url,
+        #             "is_primary": image.is_primary
+        #         }
+        #         for image in product.images
+        #     ]
+        # }
     }
 
 # UPDATE PRODUCT
-@router.put("/{product_id}")
+@router.put(
+    "/{product_id}",
+    response_model=DataResponse[ProductResponse]
+)
 async def update_product(
     product_id: UUID,
     product_data: ProductUpdate,
@@ -219,26 +215,26 @@ async def update_product(
         category_id=product_data.category_id
     )
 
+    # Fetch again so images are included
+    updated_product = await product_service.get_product_by_id(
+        db=db,
+        product_id=updated_product.id
+    )
+
     return {
         "message": "Product updated successfully",
-        "data": {
-            "id": str(updated_product.id),
-            "name": updated_product.name,
-            "price": updated_product.price,
-            "stock": updated_product.stock,
-            "status": updated_product.status,
-            "description": updated_product.description,
-            "sku": updated_product.sku,
-            "category_id": str(updated_product.category_id)
-        }
+        "data": updated_product
     }
 
 # DELETE PRODUCT
-@router.delete("/{product_id}")
+@router.delete(
+    "/{product_id}",
+    response_model=MessageResponse
+)
 async def delete_product(
     product_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_admin = Depends(require_admin)
+    current_admin=Depends(require_admin)
 ):
     product = await product_service.get_product_by_id(
         db=db,
@@ -248,7 +244,7 @@ async def delete_product(
     if product is None:
         raise HTTPException(
             status_code=404,
-            detail="product not found"
+            detail="Product not found"
         )
 
     await product_service.delete_product(
@@ -257,5 +253,5 @@ async def delete_product(
     )
 
     return {
-        "message": "successfully deleted"
+        "message": "Product deleted successfully"
     }

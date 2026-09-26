@@ -7,6 +7,11 @@ from app.database.session import get_db
 from app.schemas.category_schema import CategoryCreate, CategoryUpdate
 from app.services import category_service
 from app.api.dependencies import get_current_user,require_admin
+from fastapi import status
+
+from app.schemas.category_response_schema import CategoryResponse
+from app.schemas.common_schema import DataResponse, MessageResponse
+from app.exceptions.custom_exceptions import (NotFoundException,   BadRequestException)
 
 
 router = APIRouter(
@@ -16,7 +21,7 @@ router = APIRouter(
 
 
 # CREATE CATEGORY
-@router.post("/",  status_code=status.HTTP_201_CREATED)
+@router.post("/",  status_code=status.HTTP_201_CREATED,response_model=DataResponse[CategoryResponse])
 async def create_category(
     category: CategoryCreate,
     db: AsyncSession = Depends(get_db),
@@ -28,7 +33,8 @@ async def create_category(
     )
 
     return {
-        "message": "category inserted successfully"
+        "message": "category inserted successfully",
+        "data":category
     }
 
 
@@ -55,11 +61,14 @@ async def get_categories(
 
 
 # GET CATEGORY BY ID
-@router.get("/{category_id}")
+@router.get(
+    "/{category_id}",
+    response_model=DataResponse[CategoryResponse]
+)
 async def get_category_by_id(
     category_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     category = await category_service.get_category_by_id(
         db=db,
@@ -67,27 +76,24 @@ async def get_category_by_id(
     )
 
     if category is None:
-        raise HTTPException(
-            status_code=404,
-            detail="category not found"
+        raise NotFoundException(
+            message="Category not found",
+            error_code="CATEGORY_NOT_FOUND"
         )
-
     return {
-        "message": "category fetched successfully",
-        "data": {
-            "id": str(category.id),
-            "name": category.name
-        }
+        "message": "Category fetched successfully",
+        "data": category
     }
 
-
-# UPDATE CATEGORY
-@router.put("/{category_id}")
+@router.put(
+    "/{category_id}",
+    response_model=DataResponse[CategoryResponse]
+)
 async def update_category(
     category_id: UUID,
     category_data: CategoryUpdate,
     db: AsyncSession = Depends(get_db),
-    current_admin = Depends(require_admin)
+    current_admin=Depends(require_admin)
 ):
     category = await category_service.get_category_by_id(
         db=db,
@@ -95,27 +101,26 @@ async def update_category(
     )
 
     if category is None:
-        raise HTTPException(
-            status_code=404,
-            detail="category not found"
+        raise NotFoundException(
+            message="Category not found",
+            error_code="CATEGORY_NOT_FOUND"
         )
-
+    
     updated_category = await category_service.update_category(
         db=db,
-        name=category_data.name,
-        category=category
+        category=category,
+        name=category_data.name
     )
 
     return {
-        "message": "category updated successfully",
-        "data": {
-            "id": str(updated_category.id),
-            "name": updated_category.name
-        }
+        "message": "Category updated successfully",
+        "data": updated_category
     }
 
-
-@router.delete("/{category_id}")
+@router.delete(
+    "/{category_id}",
+    response_model=MessageResponse
+)
 async def delete_category(
     category_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -127,9 +132,9 @@ async def delete_category(
     )
 
     if category is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Category not found"
+        raise NotFoundException(
+            message="Category not found",
+            error_code="CATEGORY_NOT_FOUND"
         )
 
     await category_service.delete_category(
