@@ -18,7 +18,7 @@ async def create_product(
     category_id: UUID,
     images
 ):
-    return await product_repo.create_product(
+    product = await product_repo.create_product(
         db=db,
         name=name,
         price=price,
@@ -29,6 +29,7 @@ async def create_product(
         category_id=category_id,
         images=images
     )
+
     return await product_repo.get_product_by_id(
         db=db,
         product_id=product.id

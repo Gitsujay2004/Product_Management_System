@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.session import get_db
 from app.schemas.user_schema import UserCreate, UserUpdate,UserStatusUpdate
 from app.services import user_service
-from app.api.dependencies import require_admin
+
 from app.api.dependencies import get_current_user, require_admin
 from app.schemas.user_response_schema import UserResponse
 from app.schemas.common_schema import DataResponse, MessageResponse
@@ -20,12 +20,17 @@ router = APIRouter(
 )
 
 
-@router.post("/",  status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    status_code=status.HTTP_201_CREATED,
+    response_model=DataResponse[UserResponse]
+)
 async def create_user(
     user: UserCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_admin=Depends(require_admin)
 ):
-    await user_service.create_user(
+    created_user = await user_service.create_user(
         db=db,
         username=user.username,
         email=user.email,
@@ -33,13 +38,14 @@ async def create_user(
     )
 
     return {
-        "message": "user inserted successfully"
+        "message": "User created successfully",
+        "data": created_user
     }
-
 
 @router.get("/")
 async def get_users(
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_admin=Depends(require_admin)
 ):
     users = await user_service.get_users(
         db=db

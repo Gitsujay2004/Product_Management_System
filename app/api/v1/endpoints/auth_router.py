@@ -6,6 +6,9 @@ from app.schemas.auth_schema import RegisterRequest, LoginRequest,RefreshTokenRe
 from app.services import auth_service
 from app.api.dependencies import get_current_user
 
+from app.core.rate_limiter import limiter
+from fastapi import Request
+
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
@@ -13,7 +16,9 @@ router = APIRouter(
 
 
 @router.post("/register",  status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 async def register(
+     request: Request,
     user_data: RegisterRequest,
     db: AsyncSession = Depends(get_db)
 ):
@@ -41,7 +46,9 @@ async def register(
 
 
 @router.post("/login")
+@limiter.limit("5/minute")
 async def login(
+     request: Request,
     login_data: LoginRequest,
     db: AsyncSession = Depends(get_db)
 ):
@@ -84,7 +91,9 @@ async def get_my_profile(
     }
 
 @router.post("/refresh")
+@limiter.limit("10/minute")
 async def refresh_token(
+     request: Request,
     token_data : RefreshTokenRequest,db:AsyncSession=Depends(get_db)
 ):
 

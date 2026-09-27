@@ -1,9 +1,10 @@
 services:
+
   postgres:
     image: postgres:16
 
     container_name: product_postgre
-    
+
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: REMOVED_SECRET
@@ -11,17 +12,30 @@ services:
 
     ports:
       - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: product_backend
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:REMOVED_SECRET@postgres:5432/product_management
+
+    depends_on:
+      - postgres
+
+
 volumes:
   postgres_data:
-
-
-  # docker stop django_postgres
-
-  # run docker-compose.yml
-
-      # docker compose up -d   
-      # docker ps    
-    

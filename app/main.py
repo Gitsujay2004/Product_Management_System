@@ -24,13 +24,28 @@ from sqlalchemy.exc import IntegrityError
 import logging
 
 from app.core.logging import setup_logging
+from fastapi.encoders import jsonable_encoder
+
+
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
+from app.core.rate_limiter import limiter
 
 
 
 
 
+app = FastAPI(
+    title="Product Management System"
+)
 
-app = FastAPI()
+app.state.limiter = limiter
+
+app.add_exception_handler(
+    RateLimitExceeded,
+    _rate_limit_exceeded_handler
+)
 
 
 #Error Logging
@@ -84,19 +99,15 @@ async def app_exception_handler(
         }
     )
 
-
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(
-    request: Request,
-    exc: RequestValidationError
-):
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
         status_code=422,
         content={
             "success": False,
             "message": "Validation error",
             "error_code": "VALIDATION_ERROR",
-            "details": exc.errors()
+            "details": jsonable_encoder(exc.errors())
         }
     )
 

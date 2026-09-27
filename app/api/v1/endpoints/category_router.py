@@ -21,28 +21,30 @@ router = APIRouter(
 
 
 # CREATE CATEGORY
-@router.post("/",  status_code=status.HTTP_201_CREATED,response_model=DataResponse[CategoryResponse])
+@router.post(
+    "/",
+    status_code=status.HTTP_201_CREATED,
+    response_model=DataResponse[CategoryResponse]
+)
 async def create_category(
     category: CategoryCreate,
     db: AsyncSession = Depends(get_db),
-    current_admin = Depends(require_admin)
+    current_admin=Depends(require_admin)
 ):
-    await category_service.create_category(
+    category = await category_service.create_category(
         db=db,
         name=category.name
     )
 
     return {
-        "message": "category inserted successfully",
-        "data":category
+        "message": "Category created successfully",
+        "data": category
     }
 
-
-# GET ALL CATEGORIES
 @router.get("/")
 async def get_categories(
     db: AsyncSession = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     categories = await category_service.get_categories(
         db=db
@@ -58,7 +60,6 @@ async def get_categories(
             for category in categories
         ]
     }
-
 
 # GET CATEGORY BY ID
 @router.get(
