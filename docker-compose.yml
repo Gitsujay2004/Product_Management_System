@@ -6,9 +6,9 @@ services:
     container_name: product_postgre
 
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: REMOVED_SECRET
-      POSTGRES_DB: product_management
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
 
     ports:
       - "5432:5432"
@@ -31,7 +31,8 @@ services:
       - .env
 
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:REMOVED_SECRET@postgres:5432/product_management
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      TEST_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/product_management_test
 
     depends_on:
       - postgres
