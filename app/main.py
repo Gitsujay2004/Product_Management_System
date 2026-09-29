@@ -31,7 +31,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.core.rate_limiter import limiter
-
+from app.middleware.request_logging import RequestLoggingMiddleware
 
 
 
@@ -54,7 +54,9 @@ setup_logging()
 
 logger = logging.getLogger(__name__)
 
-
+app.add_middleware(
+    RequestLoggingMiddleware
+)
 
 app.add_middleware(
     SecurityHeadersMiddleware
