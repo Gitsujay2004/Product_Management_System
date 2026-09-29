@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: product-management-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+
+      - key: TEST_DATABASE_URL
+        sync: false
+
+      - key: SECRET_KEY
+        sync: false
+
+      - key: ALGORITHM
+        value: HS256
+
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "30"
+
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
